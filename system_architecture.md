@@ -9,6 +9,41 @@ To design and build a scalable system that ingests, processes, and analyzes a hi
 
 Here is the refined 4-stage model, incorporating our key decisions. The stages are coordinated by an event-driven workflow service that records execution metadata (status, retries, operator, timestamps) and enforces automated retries/back-pressure handling.
 
+#### Architecture Diagram
+
+```mermaid
+flowchart LR
+    subgraph Ingestion["Dispatcher"]
+        A["Source Files\n(pdf, csv, txt, xlsx, images)"] -->|Upload| B["Ingestion Service"]
+        B -->|Generate doc_id\nDetect type\nExtract content| C["Raw JSON + Metadata"]
+        C -->|Persist| D[("Data Lake")]
+        B -->|Store originals| D
+    end
+
+    subgraph Classification["Classifier"]
+        D -->|Raw JSON fetch| E["NLP Classifier"]
+        E -->|document_type\nconfidence| F[("Operational DB")]
+        E -->|Low confidence| G["HITL Queue"]
+    end
+
+    subgraph Analysis["Analyzer"]
+        F -->|doc_id & type| H["Recipe Orchestrator"]
+        H -->|Fetch raw JSON| D
+        H -->|Versioned recipes| I["Extraction Workers"]
+        I -->|Structured fields\nmetrics| J[("Analysis Tables\n(Data Warehouse)")]
+        I -->|Monitoring events| K["Observability Stack"]
+    end
+
+    subgraph Reporting["Reporter"]
+        J --> L["Semantic Layer / BI Models"]
+        L --> M["Dashboards & Reports"]
+        L --> N["NLG Summaries"]
+    end
+
+    K -.->|Alerts & drift| H
+    G -.->|Validated labels| E
+```
+
 #### 1. Dispatcher (Ingestion & Parsing)
 * **Objective:** To upload, identify, and parse all source files into a standardized raw data format, and to "tag" all data for end-to-end traceability.
 * **Input:** Original source files of any type.
