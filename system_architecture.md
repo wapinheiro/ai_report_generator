@@ -1,4 +1,3 @@
-```markdown
 # Project Brief: Medical Operations Data Pipeline
 
 ### 1. Project Objective
@@ -99,4 +98,3 @@ Start by building the PoC (Proof of Concept) with **Option A (Rule-Based)**. Thi
 * Decide whether BI tools connect directly to the warehouse or via a curated semantic layer (e.g., dbt, LookML).
 * Publish refresh SLAs and data certification tiers so consumers understand freshness and trust levels.
 * Provide a data catalog linking metrics back to `doc_id`, recipe/model versions, and source artifacts to streamline audit and self-service analytics.
-```
